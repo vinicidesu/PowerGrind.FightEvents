@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/PowerGrind.FightEvents.Application/PowerGrind.FightEvents.Application.csproj" />
+  <Project Path="src/PowerGrind.FightEvents.Domain/PowerGrind.FightEvents.Domain.csproj" />
+  <Project Path="src/PowerGrind.FightEvents.Infrastructure/PowerGrind.FightEvents.Infrastructure.csproj" />
+  <Project Path="src/PowerGrind.FightEvents.Worker/PowerGrind.FightEvents.Worker.csproj" />
+</Solution>
