@@ -1,6 +1,6 @@
-﻿using PowerGrind.FightEvents.Application.Abstractions.Messaging;
+﻿using MediatR;
 
 namespace PowerGrind.FightEvents.Application.Features.Events.Collect;
 
 public sealed record CollectEventsCommand
-    : ICommand<CollectEventsResponse>;
+    : IRequest<CollectEventsResponse>;

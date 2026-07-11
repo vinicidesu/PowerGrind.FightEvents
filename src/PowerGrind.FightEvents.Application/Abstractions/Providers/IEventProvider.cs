@@ -1,6 +1,6 @@
 ﻿using PowerGrind.FightEvents.Domain.Entities;
 
-namespace PowerGrind.FightEvents.Domain.Interfaces
+namespace PowerGrind.FightEvents.Application.Abstractions.Providers
 {
     public interface IEventProvider
     {

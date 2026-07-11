@@ -4,7 +4,10 @@ using System.Text;
 
 namespace PowerGrind.FightEvents.Application.Features.Events.Collect
 {
-    internal class ProviderExecutionResult
-    {
-    }
+    public sealed record ProviderExecutionResult(
+        string Provider,
+        bool Success,
+        int EventsCollected,
+        TimeSpan Duration,
+        Exception? Exception = null);
 }

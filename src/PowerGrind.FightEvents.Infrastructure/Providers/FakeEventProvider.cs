@@ -1,11 +1,11 @@
-﻿using PowerGrind.FightEvents.Domain.Entities;
-using PowerGrind.FightEvents.Domain.Interfaces;
+﻿using PowerGrind.FightEvents.Application.Abstractions.Providers;
+using PowerGrind.FightEvents.Domain.Entities;
 
 public class FakeEventProvider : IEventProvider
 {
     public string Name => "Fake Provider";
 
-    async Task<IReadOnlyCollection<FightEvent>> IEventProvider.GetEventsAsync(
+    public async Task<IReadOnlyCollection<FightEvent>> GetEventsAsync(
         CancellationToken cancellationToken)
     {
         await Task.Delay(2000, cancellationToken);
