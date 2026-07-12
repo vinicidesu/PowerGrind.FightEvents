@@ -13,7 +13,7 @@ namespace PowerGrind.FightEvents.Infrastructure.Persistence
             _logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<FightEvent>> SaveAsync(IReadOnlyCollection<FightEvent> events, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<FightEvent>> AddRangeAsync(IReadOnlyCollection<FightEvent> events, CancellationToken cancellationToken)
         {
             _logger.LogInformation("{Count} events saved.", events.Count);
 
