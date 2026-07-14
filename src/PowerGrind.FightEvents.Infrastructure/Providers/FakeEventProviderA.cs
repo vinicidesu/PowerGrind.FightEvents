@@ -1,21 +1,23 @@
 ﻿using PowerGrind.FightEvents.Application.Abstractions.Providers;
 using PowerGrind.FightEvents.Domain.Entities;
 
-public class FakeEventProvider : IEventProvider
+namespace PowerGrind.FightEvents.Infrastructure.Providers
 {
-    public string Name => "Fake Provider";
-
-    public async Task<IReadOnlyCollection<FightEvent>> GetEventsAsync(
-        CancellationToken cancellationToken)
+    public class FakeEventProviderA : IEventProvider
     {
-        await Task.Delay(2000, cancellationToken);
+        public string Name => "Fake Provider A";
 
-        return
-        [
-            new FightEvent
+        public async Task<IReadOnlyCollection<FightEvent>> GetEventsAsync(
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(1000, cancellationToken);
+
+            return
+            [
+                new FightEvent
             {
                 Id = Guid.NewGuid(),
-                Name = "PowerGrind Open",
+                Name = "PowerGrind A Open",
                 OrganizationName = "PowerGrind",
                 Date = new DateTime(2027, 5, 18),
                 Location = "Brasil",
@@ -25,12 +27,13 @@ public class FakeEventProvider : IEventProvider
             new FightEvent
             {
                 Id = Guid.NewGuid(),
-                Name = "PowerGrind Cup",
+                Name = "PowerGrind A Cup",
                 OrganizationName = "PowerGrind",
                 Date = new DateTime(2027, 6, 22),
                 Location = "Brasil",
                 SourceUrl = new Uri("https://powergrind.com")
             }
-        ];
+            ];
+        }
     }
 }
