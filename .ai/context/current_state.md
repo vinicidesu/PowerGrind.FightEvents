@@ -1,4 +1,4 @@
-﻿# Estado atual
+# Estado atual
 
 ## Implementado
 
@@ -113,8 +113,39 @@
 - Com limite temporário 2, A e B iniciaram juntos; C aguardou A terminar e a duração total ficou em aproximadamente 6 segundos.
 - Com o limite definitivo 5, os três providers iniciaram juntos e a duração total ficou em aproximadamente 5 segundos.
 - O repositório recebeu 6 eventos em ambos os cenários.
-- A solution compilou com 0 erros e 0 avisos.
+- A validação funcional foi concluída; no build do checkpoint a solution compilou com 0 erros e 5 avisos preexistentes de nulabilidade em `FightEvent`.
 
 ### Planejado
 
 - A Sprint 8 tratará falhas parciais, impedindo que a falha de um provider descarte os resultados dos demais.
+
+## Commit da Sprint 7
+
+- `6fb7c67` — `refactor(fight-events): limit concurrent provider execution`.
+
+## Checkpoint da sessão — 2026-07-19
+
+### Estado confirmado
+
+- Sprint 7 implementada e registrada no commit `6fb7c67`, já presente em `master` e `origin/master`.
+- Repositório estava limpo antes das atualizações documentais deste checkpoint.
+- Concorrência limitada localmente a 5 providers por execução do handler.
+- Kanban consolidado sem duplicidade da Sprint 7.
+- Decisão permanente registrada no ADR 0005.
+
+### Validação do checkpoint
+
+- Build concluído com 0 erros e 5 avisos de nulabilidade em `FightEvent`.
+- Não existem projetos de testes automatizados na pasta `tests`.
+
+### Pendências e riscos
+
+- Uma exceção em qualquer provider ainda faz `Task.WhenAll` lançar e impede o processamento dos resultados bem-sucedidos; será o foco da Sprint 8.
+- `MaximumConcurrency` está fixo em código e ainda não é configurável.
+- O semáforo limita apenas uma execução local; não impede coletas sobrepostas ou múltiplas instâncias do Worker.
+- Os 5 avisos de nulabilidade de `FightEvent` permanecem como dívida técnica.
+- Não há testes automatizados protegendo concorrência, cancelamento e agregação.
+
+### Próxima ação recomendada
+
+Abrir a Sprint 8 para isolamento de falhas por provider, começando por definir o comportamento esperado quando um provider falha e os demais têm sucesso.

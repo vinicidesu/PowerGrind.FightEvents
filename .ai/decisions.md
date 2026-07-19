@@ -12,5 +12,5 @@
 | Estratégia de execução | Providers permanecem sequenciais na Sprint 5; concorrência será introduzida isoladamente na Sprint 6 | Linha de base validada em aproximadamente 9 segundos |
 | Concorrência de providers | Criar uma task por provider e aguardar todas com `Task.WhenAll`; agregar resultados somente após a conclusão | Sprint 6 concluída e validada com 6 eventos em aproximadamente 5 segundos |
 | Segurança da agregação | Tasks não escrevem em listas compartilhadas; cada task retorna seus eventos e métricas | `CollectEventsFromProviderAsync` e agregação posterior no handler |
-| Limite de concorrência | `MaximumConcurrency = 5`, aplicado por execução com uma instância compartilhada de `SemaphoreSlim` | Sprint 7 concluída; limite provado temporariamente com valor 2 e configuração final validada com valor 5 |
+| Limite de concorrência | `MaximumConcurrency = 5`, aplicado por execução com uma instância compartilhada de `SemaphoreSlim` | ADR 0005; commit `6fb7c67`; limite provado temporariamente com valor 2 e configuração final validada com valor 5 |
 | Ciclo de vida do semáforo | Aquisição cancelável com `WaitAsync`, liberação em `finally` e descarte por escopo | `CollectEventsCommandHandler` e validações da Sprint 7 |

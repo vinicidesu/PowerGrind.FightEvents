@@ -1,4 +1,4 @@
-﻿# Sprint 1 proposta — Da demonstração ao primeiro dado persistido
+# Sprint 1 proposta — Da demonstração ao primeiro dado persistido
 
 ## Objetivo
 
@@ -168,50 +168,6 @@ Sprint 7 — Concorrência limitada, com limite inicial de 5 providers simultân
 
 ---
 
-# Sprint 7 em andamento — Concorrência limitada
-
-## Objetivo
-
-Limitar a quantidade de providers executados simultaneamente sem remover `Task.WhenAll`, protegendo o Worker e as fontes externas contra concorrência excessiva.
-
-## Contexto técnico
-
-`Task.WhenAll` inicia todas as operações disponíveis. Isso melhorou a duração da coleta, mas não impõe limite. Com dezenas de providers, a aplicação poderia abrir conexões demais ou pressionar serviços externos. A Sprint 7 introduzirá `SemaphoreSlim` como controle local de concorrência.
-
-## Itens
-
-- Definir `MaximumConcurrency = 5` como decisão inicial.
-- Criar um `SemaphoreSlim` por execução da coleta.
-- Aguardar acesso ao semáforo com `WaitAsync(cancellationToken)` antes de executar cada provider.
-- Liberar o semáforo em `finally`.
-- Manter uma task por provider e `Task.WhenAll`.
-- Preservar métricas, logs, cancelamento, agregação posterior e persistência única.
-- Definir uma forma verificável de provar que nunca mais de cinco providers executam simultaneamente.
-
-## Fora do escopo
-
-Falhas parciais, retry, timeout, provider real, scheduler, distributed lock e persistência real.
-
-## Critérios de aceite
-
-- O código mantém `Task.WhenAll`.
-- No máximo cinco providers entram na seção de coleta ao mesmo tempo.
-- `Release` acontece em `finally`.
-- Cancelamento é propagado ao aguardar o semáforo e ao provider.
-- Não há escrita concorrente em listas compartilhadas.
-- O repositório continua recebendo todos os eventos uma única vez.
-- A solution compila sem erros ou avisos.
-
-## Decisão de validação pendente
-
-Com apenas três providers fake, o limite de cinco não é exercitado. Antes da implementação final, será definida uma estratégia didática para comprovar o limite sem confundir código demonstrativo com comportamento de produção.
-
-## Commit esperado
-
-`refactor(fight-events): limit concurrent provider execution`
-
----
-
 # Sprint 7 concluída — Concorrência limitada
 
 ## Entregue
@@ -226,7 +182,7 @@ Com apenas três providers fake, o limite de cinco não é exercitado. Antes da 
 
 - Teste controlado com limite 2: o terceiro provider aguardou uma vaga e a coleta terminou em aproximadamente 6 segundos.
 - Configuração definitiva com limite 5: três providers simultâneos, 6 eventos e duração total aproximada de 5 segundos.
-- Build final: 0 erros e 0 avisos.
+- Build do checkpoint: 0 erros e 5 avisos preexistentes de nulabilidade em `FightEvent`.
 
 ## Fora do escopo
 
@@ -236,6 +192,6 @@ Falhas parciais, retry, timeout, provider real, scheduler, distributed lock e pe
 
 Sprint 8 — Isolamento de falhas por provider.
 
-## Commit esperado
+## Commit confirmado
 
-`refactor(fight-events): limit concurrent provider execution`
+- `6fb7c67` — `refactor(fight-events): limit concurrent provider execution`
