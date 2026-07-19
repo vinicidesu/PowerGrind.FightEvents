@@ -19,3 +19,13 @@
 - Integrar eventos tratados ao produto PowerGrind por contrato explícito.
 - Adicionar fontes conforme qualidade, termos de uso e custo operacional.
 - Avaliar mensageria ou paralelismo limitado somente quando volume/cadência justificarem.
+## Atualização — Sprint 4 concluída
+
+- Múltiplos providers fake foram validados em execução sequencial, com total de 6 eventos persistidos pelo repositório fake.
+- O próximo passo é a Sprint 5, de observabilidade básica. A execução continuará sequencial até uma decisão explícita na Sprint 6 para introduzir `Task.WhenAll`.
+
+## Atualização — Sprint 5 concluída
+
+- A execução sequencial agora possui métricas individuais por provider e uma visão total da coleta.
+- A linha de base validada foi de aproximadamente 9 segundos para os três providers fake.
+- A Sprint 6 usará essa linha de base para comparar a execução concorrente com `Task.WhenAll`.

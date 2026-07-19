@@ -25,3 +25,37 @@
 ## Observações
 
 `FakeEventProvider` contém datas de 2027 e URL `powergrind.com` apenas como dados de demonstração. Não representam eventos reais nem uma integração externa concluída.
+## Atualização — Sprint 4 concluída
+
+### Implementado
+
+- Três implementações fake de `IEventProvider` foram registradas no DI: `FakeEventProviderA`, `FakeEventProviderB` e `FakeEventProviderC`.
+- Os providers executam sequencialmente pelo `CollectEventsCommandHandler`, com delays de 1, 3 e 5 segundos e retornam, respectivamente, 2, 3 e 1 eventos.
+- `IEnumerable<IEventProvider>` recebeu as três implementações; os logs identificaram cada provider individualmente e o repositório fake registrou 6 eventos persistidos.
+- A solution compilou sem avisos ou erros e a execução do Worker terminou a coleta sem falhas.
+
+### Planejado
+
+- A Sprint 5 tratará apenas da observabilidade básica da coleta. Concorrência, timeout, retry, providers reais e persistência real permanecem fora do escopo atual.
+
+## Atualização — Sprint 5 concluída
+
+### Implementado
+
+- `ProviderExecutionResult` registra o nome do provider, a quantidade de eventos coletados e a duração da execução.
+- `CollectEventsResponse` passou a expor os resultados individuais e calcula `TotalCollectedEvents` a partir deles.
+- `CollectEventsCommandHandler` mede e registra início, conclusão, quantidade e duração de cada provider.
+- A coleta total passou a registrar quantidade de providers, total de eventos e duração.
+- A execução continua sequencial e persistindo todos os eventos após a conclusão dos providers.
+
+### Validação
+
+- Fake Provider A: 2 eventos em aproximadamente 1 segundo.
+- Fake Provider B: 3 eventos em aproximadamente 3 segundos.
+- Fake Provider C: 1 evento em aproximadamente 5 segundos.
+- Total: 3 providers, 6 eventos e aproximadamente 9 segundos.
+- Solution compilada sem avisos ou erros.
+
+### Planejado
+
+- A Sprint 6 introduzirá concorrência com `Task.WhenAll`, preservando os resultados individuais e sem adicionar limitação de concorrência ou tratamento de falhas parciais.
