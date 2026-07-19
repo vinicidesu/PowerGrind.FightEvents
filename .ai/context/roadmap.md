@@ -29,3 +29,9 @@
 - A execução sequencial agora possui métricas individuais por provider e uma visão total da coleta.
 - A linha de base validada foi de aproximadamente 9 segundos para os três providers fake.
 - A Sprint 6 usará essa linha de base para comparar a execução concorrente com `Task.WhenAll`.
+
+## Atualização — Sprint 6 concluída
+
+- Providers agora executam concorrentemente com `Task.WhenAll`.
+- A linha de base caiu de aproximadamente 9 segundos sequenciais para 5 segundos concorrentes.
+- A Sprint 7 adicionará limite de concorrência sem remover `Task.WhenAll`.

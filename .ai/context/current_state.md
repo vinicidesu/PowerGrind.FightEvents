@@ -59,3 +59,36 @@
 ### Planejado
 
 - A Sprint 6 introduzirá concorrência com `Task.WhenAll`, preservando os resultados individuais e sem adicionar limitação de concorrência ou tratamento de falhas parciais.
+
+## Atualização — Sprint 6 em andamento
+
+- A execução individual de cada provider foi isolada em `CollectEventsFromProviderAsync`.
+- O método retorna os eventos e o `ProviderExecutionResult` como uma unidade independente, sem escrever em listas compartilhadas.
+- O `Handle` permanece sequencial neste checkpoint e apenas agrega os retornos.
+- Validação preservada: 3 providers, 6 eventos e duração total aproximada de 9 segundos.
+- O build foi concluído com sucesso; permanecem 5 avisos preexistentes de nulabilidade em `FightEvent`.
+- `Task.WhenAll` ainda não foi implementado.
+
+## Atualização — Sprint 6 concluída
+
+### Implementado
+
+- A execução individual foi isolada em `CollectEventsFromProviderAsync`.
+- Uma task é criada para cada provider e todas são aguardadas com `Task.WhenAll`.
+- Cada task retorna seus eventos e seu `ProviderExecutionResult` sem escrever em listas compartilhadas.
+- Eventos e métricas são agregados somente após a conclusão das tasks.
+- A persistência continua acontecendo uma única vez após a coleta.
+- Logs, métricas individuais e `CancellationToken` foram preservados.
+
+### Validação
+
+- Os três providers iniciaram antes da conclusão do primeiro.
+- Fake Provider A: 2 eventos em aproximadamente 1 segundo.
+- Fake Provider B: 3 eventos em aproximadamente 3 segundos.
+- Fake Provider C: 1 evento em aproximadamente 5 segundos.
+- Total: 3 providers, 6 eventos e aproximadamente 5 segundos.
+- Solution compilada sem erros ou avisos.
+
+### Planejado
+
+- A Sprint 7 introduzirá concorrência limitada com `SemaphoreSlim`, mantendo `Task.WhenAll`.

@@ -8,3 +8,4 @@
 - [x] Provider e repositório fake para demonstrar o fluxo ponta a ponta.
 - [x] Sprint 4: três providers fake resolvidos por DI, executados sequencialmente e validados com 6 eventos persistidos.
 - [x] Sprint 5: observabilidade individual e total da coleta, validada com três providers e 6 eventos.
+- [x] Sprint 6: providers executados concorrentemente com `Task.WhenAll`, 6 eventos e duração total aproximada de 5 segundos.

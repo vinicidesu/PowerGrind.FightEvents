@@ -97,3 +97,71 @@ Tornar a execução sequencial dos providers observável, sem alterar sua estrat
 ## Próxima sprint
 
 Sprint 6 — Concorrência com `Task.WhenAll`.
+
+---
+
+# Sprint 6 em andamento — Concorrência com Task.WhenAll
+
+## Objetivo
+
+Executar os providers concorrentemente com `Task.WhenAll` e comparar a duração total com a linha de base sequencial de aproximadamente 9 segundos.
+
+## Itens
+
+- Isolar a execução de um provider em um método assíncrono que retorne seus eventos e seu `ProviderExecutionResult`.
+- Criar uma task por provider sem aguardar individualmente dentro da criação da coleção.
+- Aguardar todas as execuções com `Task.WhenAll`.
+- Agregar os eventos somente após a conclusão das tasks, evitando escrita concorrente em `List<T>` compartilhada.
+- Preservar logs, métricas individuais, `CancellationToken` e persistência única após a coleta.
+- Validar que os três providers continuam retornando 6 eventos.
+- Comparar a duração total concorrente com a linha de base sequencial.
+
+## Fora do escopo
+
+`SemaphoreSlim`, limite de concorrência, falhas parciais, `try/catch` por provider, retry, timeout, provider real e persistência real.
+
+## Critérios de aceite
+
+- Os três providers iniciam antes da conclusão do provider mais lento.
+- `Task.WhenAll` aguarda todas as execuções.
+- Nenhuma lista mutável compartilhada é escrita pelas tasks concorrentes.
+- O repositório recebe 6 eventos uma única vez.
+- Os resultados individuais continuam corretos.
+- A duração total fica próxima do provider mais lento, aproximadamente 5 segundos.
+- A solution compila sem erros ou avisos.
+
+## Commit esperado
+
+`refactor(fight-events): execute event providers concurrently`
+
+## Checkpoint aprovado — preparação para concorrência
+
+- [x] Isolar a execução individual em método assíncrono.
+- [x] Retornar eventos e `ProviderExecutionResult` sem escrita compartilhada.
+- [x] Preservar execução sequencial, métricas e total de 6 eventos.
+- [ ] Criar uma task por provider.
+- [ ] Aguardar todas com `Task.WhenAll`.
+- [ ] Agregar os resultados após a conclusão das tasks.
+- [ ] Validar duração total próxima de 5 segundos.
+
+---
+
+# Sprint 6 concluída — Concorrência com Task.WhenAll
+
+## Entregue
+
+- Método independente por provider.
+- Uma task por provider.
+- Espera conjunta com `Task.WhenAll`.
+- Ausência de escrita concorrente em listas compartilhadas.
+- Agregação e persistência únicas após a coleta.
+- Redução da duração total de aproximadamente 9 para 5 segundos.
+- Validação com três providers e 6 eventos.
+
+## Fora do escopo
+
+`SemaphoreSlim`, limite de concorrência, falhas parciais, retry, timeout, provider real e persistência real.
+
+## Próxima sprint
+
+Sprint 7 — Concorrência limitada, com limite inicial de 5 providers simultâneos.

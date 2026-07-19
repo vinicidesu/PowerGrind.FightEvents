@@ -25,35 +25,45 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
             var totalStopWatch = new System.Diagnostics.Stopwatch();
             totalStopWatch.Start();
 
-            foreach (var provider in _providers)
+            var providerTasks = _providers.Select(provider => CollectEventsFromProviderAsync(provider, cancellationToken));
+            var results = await Task.WhenAll(providerTasks);
+
+            foreach (var (events, executionResult) in results)
             {
-                _logger.LogInformation("Collecting events from provider: {ProviderName}", provider.Name);
-                var stopWatchExecution = new System.Diagnostics.Stopwatch();
-                stopWatchExecution.Start();
-
-                var events = await provider.GetEventsAsync(cancellationToken);
-
                 eventsCollected.AddRange(events);
-
-                stopWatchExecution.Stop();
-
-                providerExecutionResults.Add(new ProviderExecutionResult(
-                    Provider: provider.Name,
-                    EventsCollected: events.Count,
-                    Duration: stopWatchExecution.Elapsed
-                ));
-
-                _logger.LogInformation("Events collected from provider: {ProviderName}, Events: {EventsCollected}, Duration: {Duration}",
-                    provider.Name, events.Count, stopWatchExecution.Elapsed);
+                providerExecutionResults.Add(executionResult);
             }
 
             await _repository.AddRangeAsync(eventsCollected, cancellationToken);
             totalStopWatch.Stop();
 
             _logger.LogInformation("Total providers executed: {TotalProvidersExecuted}, Total events collected: {TotalEventsCollected}, Total Duration: {TotalDuration}",
-                _providers.Count(), eventsCollected.Count, totalStopWatch.Elapsed);
+                providerExecutionResults.Count, eventsCollected.Count, totalStopWatch.Elapsed);
 
             return new CollectEventsResponse(providerExecutionResults);
+        }
+
+        private async Task<(IReadOnlyCollection<FightEvent> Events, ProviderExecutionResult ExecutionResult)> CollectEventsFromProviderAsync(IEventProvider provider, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Collecting events from provider: {ProviderName}", provider.Name);
+
+            var stopWatchExecution = new System.Diagnostics.Stopwatch();
+            stopWatchExecution.Start();
+
+            var events = await provider.GetEventsAsync(cancellationToken);
+
+            stopWatchExecution.Stop();
+
+            var executionResult = new ProviderExecutionResult(
+                Provider: provider.Name,
+                EventsCollected: events.Count,
+                Duration: stopWatchExecution.Elapsed
+            );
+
+            _logger.LogInformation("Events collected from provider: {ProviderName}, Events: {EventsCollected}, Duration: {Duration}",
+                provider.Name, events.Count, stopWatchExecution.Elapsed);
+
+            return (events, executionResult);
         }
     }
 }
