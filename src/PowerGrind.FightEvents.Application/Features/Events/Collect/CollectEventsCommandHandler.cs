@@ -11,6 +11,8 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
         private readonly IEnumerable<IEventProvider> _providers;
         private readonly IFightEventRepository _repository;
 
+        private const int MaximumConcurrency = 5;
+
         public CollectEventsCommandHandler(IEnumerable<IEventProvider> providers, IFightEventRepository repository, ILogger<CollectEventsCommandHandler> logger)
         {
             _providers = providers;
@@ -22,10 +24,13 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
         {
             var eventsCollected = new List<FightEvent>();
             var providerExecutionResults = new List<ProviderExecutionResult>();
+
             var totalStopWatch = new System.Diagnostics.Stopwatch();
             totalStopWatch.Start();
 
-            var providerTasks = _providers.Select(provider => CollectEventsFromProviderAsync(provider, cancellationToken));
+            using var semaphore = new SemaphoreSlim(MaximumConcurrency);
+
+            var providerTasks = _providers.Select(provider => CollectEventsFromProviderAsync(provider, semaphore, cancellationToken));
             var results = await Task.WhenAll(providerTasks);
 
             foreach (var (events, executionResult) in results)
@@ -43,27 +48,35 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
             return new CollectEventsResponse(providerExecutionResults);
         }
 
-        private async Task<(IReadOnlyCollection<FightEvent> Events, ProviderExecutionResult ExecutionResult)> CollectEventsFromProviderAsync(IEventProvider provider, CancellationToken cancellationToken)
+        private async Task<(IReadOnlyCollection<FightEvent> Events, ProviderExecutionResult ExecutionResult)> CollectEventsFromProviderAsync(IEventProvider provider,
+            SemaphoreSlim semaphore, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Collecting events from provider: {ProviderName}", provider.Name);
+            await semaphore.WaitAsync(cancellationToken);
 
-            var stopWatchExecution = new System.Diagnostics.Stopwatch();
-            stopWatchExecution.Start();
+            try
+            {
+                _logger.LogInformation("Collecting events from provider: {ProviderName}", provider.Name);
+                var stopWatchExecution = new System.Diagnostics.Stopwatch();
+                stopWatchExecution.Start();
 
-            var events = await provider.GetEventsAsync(cancellationToken);
+                var events = await provider.GetEventsAsync(cancellationToken);
 
-            stopWatchExecution.Stop();
+                stopWatchExecution.Stop();
+                var executionResult = new ProviderExecutionResult(
+                    Provider: provider.Name,
+                    EventsCollected: events.Count,
+                    Duration: stopWatchExecution.Elapsed
+                );
 
-            var executionResult = new ProviderExecutionResult(
-                Provider: provider.Name,
-                EventsCollected: events.Count,
-                Duration: stopWatchExecution.Elapsed
-            );
+                _logger.LogInformation("Events collected from provider: {ProviderName}, Events: {EventsCollected}, Duration: {Duration}",
+                    provider.Name, events.Count, stopWatchExecution.Elapsed);
 
-            _logger.LogInformation("Events collected from provider: {ProviderName}, Events: {EventsCollected}, Duration: {Duration}",
-                provider.Name, events.Count, stopWatchExecution.Elapsed);
-
-            return (events, executionResult);
+                return (events, executionResult);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
     }
 }

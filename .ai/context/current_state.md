@@ -92,3 +92,29 @@
 ### Planejado
 
 - A Sprint 7 introduzirá concorrência limitada com `SemaphoreSlim`, mantendo `Task.WhenAll`.
+
+## Commit da Sprint 6
+
+- `4e8aa9f` — `refactor(fight-events): execute event providers concurrently`.
+
+## Atualização — Sprint 7 concluída
+
+### Implementado
+
+- A concorrência dos providers passou a ser limitada por uma única instância de `SemaphoreSlim` criada por execução do handler.
+- `MaximumConcurrency` foi definido em 5 providers simultâneos.
+- Cada provider aguarda uma vaga com `WaitAsync(cancellationToken)` antes de iniciar sua coleta.
+- A permissão é devolvida em `finally`, inclusive quando a execução falha ou é cancelada depois da aquisição.
+- O semáforo é descartado ao final do escopo com `using`.
+- `Task.WhenAll`, a agregação posterior dos resultados e a persistência única foram preservados.
+
+### Validação
+
+- Com limite temporário 2, A e B iniciaram juntos; C aguardou A terminar e a duração total ficou em aproximadamente 6 segundos.
+- Com o limite definitivo 5, os três providers iniciaram juntos e a duração total ficou em aproximadamente 5 segundos.
+- O repositório recebeu 6 eventos em ambos os cenários.
+- A solution compilou com 0 erros e 0 avisos.
+
+### Planejado
+
+- A Sprint 8 tratará falhas parciais, impedindo que a falha de um provider descarte os resultados dos demais.
