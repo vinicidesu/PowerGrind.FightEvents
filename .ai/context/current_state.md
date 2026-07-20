@@ -149,3 +149,34 @@
 ### Próxima ação recomendada
 
 Abrir a Sprint 8 para isolamento de falhas por provider, começando por definir o comportamento esperado quando um provider falha e os demais têm sucesso.
+## Sprint 8 aberta — Motor de coleta resiliente
+
+- A Sprint 8 passa a agrupar falhas parciais, timeout, configuração e testes como uma única capacidade operacional.
+- O trabalho será acompanhado por quatro checkpoints internos, sem criar uma nova sprint para cada mecanismo técnico.
+- Retry foi adiado para a primeira integração externa real.
+- Primeiro checkpoint: definir o contrato de sucesso parcial antes de alterar o handler.
+## Sprint 8 — Checkpoint 1 aprovado
+
+- Contrato de resultado evoluído para representar sucesso, falha e timeout.
+- Propriedades booleanas e totais são calculados a partir de `ProviderExecutionStatus`.
+- `CollectEventsResponse` informa total de providers, sucessos, falhas, timeouts, eventos e presença de falhas.
+- Retorno de zero eventos foi definido como execução bem-sucedida.
+- O handler continua implementando apenas o caminho de sucesso; falhas serão isoladas no Checkpoint 2.
+- Build concluído com 0 erros e 0 avisos.
+
+### Próxima ação
+
+Checkpoint 2: capturar falhas por provider sem capturar o cancelamento global, manter as demais tasks e persistir apenas eventos bem-sucedidos.
+## Sprint 8 — Checkpoint 2 aprovado
+
+- Falhas comuns são isoladas por provider e representadas como `Failed`.
+- Cancelamento global continua sendo propagado para encerrar a coleta cooperativamente.
+- Resultados bem-sucedidos continuam sendo processados quando outra fonte falha.
+- Persistência ocorre uma única vez e somente para eventos de execuções bem-sucedidas.
+- Cenário parcial validado com 2 sucessos, 1 falha e 3 eventos persistidos.
+- Cenário normal restaurado e validado com 3 sucessos, 6 eventos e duração aproximada de 5 segundos.
+- Build concluído com 0 erros e 0 avisos.
+
+### Próxima ação
+
+Checkpoint 3: externalizar limite de concorrência e timeout com Options, aplicar timeout individual e validar configurações na inicialização.

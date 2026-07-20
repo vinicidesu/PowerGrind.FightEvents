@@ -195,3 +195,91 @@ Sprint 8 — Isolamento de falhas por provider.
 ## Commit confirmado
 
 - `6fb7c67` — `refactor(fight-events): limit concurrent provider execution`
+---
+
+# Sprint 8 em andamento — Motor de coleta resiliente
+
+## Objetivo
+
+Transformar o fluxo concorrente atual em um motor de coleta capaz de preservar resultados bem-sucedidos quando um provider falha, impor timeout individual, usar configurações externas e possuir testes automatizados essenciais.
+
+## Capacidade entregue ao final
+
+Uma falha ou timeout em uma fonte não impede a persistência dos eventos coletados pelas demais, e o resultado da coleta informa claramente sucessos e falhas.
+
+## Checkpoint 1 — Contrato de sucesso parcial
+
+- [x] Definir como `ProviderExecutionResult` representa sucesso e falha.
+- [x] Definir os totais derivados em `CollectEventsResponse`.
+- [x] Definir o comportamento quando alguns ou todos os providers falham.
+- [x] Preservar a propagação de cancelamento solicitado pelo Worker.
+
+## Checkpoint 1 aprovado — Contrato de sucesso parcial
+
+- `ProviderExecutionStatus` define `Succeeded`, `Failed` e `TimedOut`.
+- `ProviderExecutionResult` mantém provider, quantidade, duração, status e mensagem de erro opcional.
+- `IsSuccess`, `IsFailed` e `IsTimedOut` são derivados do status, evitando estados contraditórios.
+- `CollectEventsResponse` calcula totais de execuções, sucessos, falhas, timeouts, eventos e `HasFailures`.
+- Retorno vazio de um provider permanece sucesso; falha depende de exceção ou timeout.
+- Cancelamento global não é modelado como status de provider e continuará sendo propagado.
+- Handler adaptado apenas para o caminho de sucesso; isolamento de exceções permanece no Checkpoint 2.
+- Build validado com 0 erros e 0 avisos.
+## Checkpoint 2 — Isolamento de falhas
+
+- [x] Capturar falhas dentro da execução individual de cada provider.
+- [x] Garantir que uma falha não interrompa as demais tasks.
+- [x] Persistir somente os eventos dos providers bem-sucedidos.
+- [x] Registrar logs estruturados de sucesso e erro.
+- [x] Manter liberação do `SemaphoreSlim` em `finally`.
+
+## Checkpoint 2 aprovado — Isolamento de falhas
+
+- Exceções comuns são convertidas em `ProviderExecutionResult` com status `Failed`.
+- Cancelamento global solicitado pelo Worker é propagado com `throw` e não vira falha comum.
+- Duração real de sucesso e falha é preservada.
+- `Task.WhenAll` recebe resultados das falhas comuns sem interromper os demais providers.
+- Apenas eventos de resultados bem-sucedidos são agregados.
+- Repositório é chamado uma única vez e somente quando há eventos.
+- `SemaphoreSlim.Release()` permanece protegido por `finally`.
+- Falha parcial validada: A e C tiveram sucesso, B falhou, 3 eventos foram persistidos e o Host permaneceu ativo.
+- Fluxo normal restaurado: 3 providers, 6 eventos e duração aproximada de 5 segundos.
+- Build final validado com 0 erros e 0 avisos.
+## Checkpoint 3 — Configuração e timeout
+
+- Remover o limite de concorrência fixo do handler.
+- Configurar limite de concorrência e timeout por provider por meio de Options.
+- Aplicar timeout individual sem confundi-lo com o cancelamento global do Worker.
+- Validar configurações inválidas na inicialização.
+
+## Checkpoint 4 — Testes e fechamento
+
+- Criar projeto de testes unitários da Application.
+- Cobrir sucesso total, falha parcial, falha total, timeout e cancelamento global.
+- Validar que somente eventos bem-sucedidos chegam ao repositório.
+- Confirmar que a concorrência limitada continua funcionando.
+
+## Critérios de aceite
+
+- A falha de um provider não cancela nem descarta os resultados dos demais.
+- Cancelamento do Worker continua encerrando a coleta cooperativamente.
+- Timeout é registrado como falha do provider, não como cancelamento global.
+- A resposta informa providers executados, sucessos, falhas e total de eventos coletados.
+- O repositório recebe somente eventos de execuções bem-sucedidas e é chamado uma única vez quando houver eventos.
+- Limite de concorrência e timeout são configuráveis e validados.
+- Testes automatizados cobrem os cinco cenários definidos.
+- Build e testes terminam sem erros.
+
+## Fora do escopo
+
+Retry, provider externo real, normalização, deduplicação, PostgreSQL, scheduler, distributed lock e Docker.
+
+## Definition of Done
+
+- Todos os critérios de aceite validados.
+- Revisão técnica aprovada.
+- Documentação local e Notion atualizados.
+- Commit principal da sprint criado e verificado.
+
+## Commit principal esperado
+
+`feat(fight-events): add resilient provider collection`

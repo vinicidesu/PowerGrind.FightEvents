@@ -30,16 +30,24 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
 
             using var semaphore = new SemaphoreSlim(MaximumConcurrency);
 
-            var providerTasks = _providers.Select(provider => CollectEventsFromProviderAsync(provider, semaphore, cancellationToken));
+            var providerTasks = _providers.Select(provider => CollectEventsFromProviderAsync(provider, semaphore, cancellationToken));            
             var results = await Task.WhenAll(providerTasks);
 
             foreach (var (events, executionResult) in results)
             {
-                eventsCollected.AddRange(events);
                 providerExecutionResults.Add(executionResult);
+
+                if(executionResult.IsSuccess)
+                {
+                    eventsCollected.AddRange(events);
+                }
             }
 
-            await _repository.AddRangeAsync(eventsCollected, cancellationToken);
+            if (eventsCollected.Any())
+            {
+                await _repository.AddRangeAsync(eventsCollected, cancellationToken);
+            }
+
             totalStopWatch.Stop();
 
             _logger.LogInformation("Total providers executed: {TotalProvidersExecuted}, Total events collected: {TotalEventsCollected}, Total Duration: {TotalDuration}",
@@ -53,25 +61,49 @@ namespace PowerGrind.FightEvents.Application.Features.Events.Collect
         {
             await semaphore.WaitAsync(cancellationToken);
 
+            var stopWatchExecution = new System.Diagnostics.Stopwatch();
+            stopWatchExecution.Start();
             try
             {
                 _logger.LogInformation("Collecting events from provider: {ProviderName}", provider.Name);
-                var stopWatchExecution = new System.Diagnostics.Stopwatch();
-                stopWatchExecution.Start();
 
                 var events = await provider.GetEventsAsync(cancellationToken);
-
                 stopWatchExecution.Stop();
+
                 var executionResult = new ProviderExecutionResult(
                     Provider: provider.Name,
                     EventsCollected: events.Count,
-                    Duration: stopWatchExecution.Elapsed
+                    Duration: stopWatchExecution.Elapsed,
+                    Status: ProviderExecutionStatus.Succeeded,
+                    ErrorMessage: null
                 );
 
                 _logger.LogInformation("Events collected from provider: {ProviderName}, Events: {EventsCollected}, Duration: {Duration}",
                     provider.Name, events.Count, stopWatchExecution.Elapsed);
 
                 return (events, executionResult);
+            }
+            catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+            {
+                stopWatchExecution.Stop();
+
+                throw;
+            }
+            catch(Exception ex)
+            {
+                stopWatchExecution.Stop();
+                _logger.LogError(ex, "Error collecting events from provider: {ProviderName}, duration: {Duration}", provider.Name, stopWatchExecution.Elapsed);
+
+                var executionResult = new ProviderExecutionResult(
+                    Provider: provider.Name,
+                    EventsCollected: 0,
+                    Duration: stopWatchExecution.Elapsed,
+                    Status: ProviderExecutionStatus.Failed,
+                    ErrorMessage: ex.Message
+                );
+
+                return (Array.Empty<FightEvent>(), executionResult);
             }
             finally
             {

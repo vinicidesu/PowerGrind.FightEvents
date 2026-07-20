@@ -1,4 +1,4 @@
-﻿# Roadmap inicial
+# Roadmap inicial
 
 ## Curto prazo
 
@@ -35,3 +35,29 @@
 - Providers agora executam concorrentemente com `Task.WhenAll`.
 - A linha de base caiu de aproximadamente 9 segundos sequenciais para 5 segundos concorrentes.
 - A Sprint 7 adicionará limite de concorrência sem remover `Task.WhenAll`.
+
+## Revisão de cadência — 2026-07-19
+
+As sprints deixam de ser separadas por mecanismo técnico e passam a entregar capacidades completas. Os passos menores continuam existindo como checkpoints internos de aprendizado e revisão.
+
+### Sprint 8 — Motor de coleta resiliente
+
+Falhas parciais, resultado por provider, timeout, configurações e testes automatizados essenciais.
+
+### Sprint 9 — Primeiro provider real
+
+Seleção da fonte, `HttpClientFactory`, modelo externo, `CollectedEvent`, parser, normalização mínima e testes HTTP controlados. Retry será introduzido com base nos erros transitórios dessa integração.
+
+### Sprint 10 — Persistência idempotente
+
+PostgreSQL, decisão EF Core/Dapper, migration, identidade, deduplicação inicial, upsert e testes de integração.
+
+### Sprint 11 — Execução operacional
+
+Agendamento configurável, proteção contra sobreposição, Docker, configuração por ambiente, logs e health check.
+
+### Sprint 12 — MVP integrado
+
+Consulta dos eventos pelo produto, filtros básicos, revisão de observabilidade, documentação operacional e validação ponta a ponta.
+
+Esta revisão substitui o sequenciamento antigo das Sprints 8 a 22 como plano vigente, preservando-o apenas como histórico da evolução do planejamento.
